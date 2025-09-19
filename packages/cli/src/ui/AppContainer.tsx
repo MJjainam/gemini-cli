@@ -59,7 +59,6 @@ import { useConsoleMessages } from './hooks/useConsoleMessages.js';
 import { useTerminalSize } from './hooks/useTerminalSize.js';
 import { calculatePromptWidths } from './components/InputPrompt.js';
 import { useStdin, useStdout } from 'ink';
-import ansiEscapes from 'ansi-escapes';
 import * as fs from 'node:fs';
 import { useTextBuffer } from './components/shared/text-buffer.js';
 import { useLogger } from './hooks/useLogger.js';
@@ -288,7 +287,7 @@ export const AppContainer = (props: AppContainerProps) => {
   }, [historyManager.history, logger]);
 
   const refreshStatic = useCallback(() => {
-    stdout.write(ansiEscapes.clearTerminal);
+    stdout.write('\x1b[3J\x1b[H\x1b[2J');
     setHistoryRemountKey((prev) => prev + 1);
   }, [setHistoryRemountKey, stdout]);
 
@@ -767,14 +766,8 @@ Logging in with Google... Please restart Gemini CLI to continue.
       return;
     }
 
-    const handler = setTimeout(() => {
-      refreshStatic();
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [terminalWidth, refreshStatic]);
+    refreshStatic();
+  }, [terminalWidth, terminalHeight, refreshStatic]);
 
   useEffect(() => {
     const unsubscribe = ideContextStore.subscribe(setIdeContextState);
